@@ -19,10 +19,10 @@ The simulator can be executed as:
 
 where
 
-<n>    : table size of Bloom filter
+`<n>`    : table size of Bloom filter
 
-<m>    : maximum number of items inserted into Bloom filter
+`<m>`    : maximum number of items inserted into Bloom filter
 
-<t>    : number of tests to be run for determining the false positive rate
+`<t>`    : number of tests to be run for determining the false positive rate
 
-<seed> : seed for the random number generator
+`<seed>` : seed for the random number generator
