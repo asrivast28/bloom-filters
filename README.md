@@ -6,18 +6,14 @@ GNU compiler collection. Specifically, g++ with support for C++11.
 ## Compilation
 Source can be compiled to get an executable using the provided Makefile, as
 
-<code>
-make clean
-make
-</code>
+`make clean`
+`make`
 
 This will create a new executable in the directory called `bloom_filters`.
 
 ## Execution
 The simulator can be executed as:
-<code>
-bloom_filters <n> <m> <seed> <t>
-</code>
+`bloom_filters <n> <m> <seed> <t>`
 where
 <n>    : table size of Bloom filter
 <m>    : maximum number of items inserted into Bloom filter
