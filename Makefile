@@ -1,6 +1,8 @@
 CXX = g++
 LINKER = g++
 CXXFLAGS = -Wall -std=c++0x -O3 -DNDEBUG
+# debug flags
+#CXXFLAGS = -Wall -std=c++0x -g
 
 SOURCES:= bloom_filters.cpp
 

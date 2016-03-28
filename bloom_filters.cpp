@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <random>
+#include <set>
 #include <vector>
 
 
@@ -11,7 +12,7 @@
 class LinearCongruentialHash {
 public:
   LinearCongruentialHash()
-    : m_n(),  m_a(), m_b()
+    : m_n(), m_a(), m_b()
   { }
 
   LinearCongruentialHash(const size_t n, const size_t a, const size_t b)
@@ -35,11 +36,11 @@ private:
  */
 class HashFunction {
 public:
-  HashFunction(const size_t k, const size_t n, std::mt19937_64& generator)
+  HashFunction(const size_t n, const size_t k, std::mt19937_64& generator)
     : m_hasher(k)
   {
-    std::uniform_int_distribution<size_t> distribution(0, n-1);
     for (size_t i = 0; i < k; ++i) {
+      std::uniform_int_distribution<size_t> distribution(0, n-1);
       size_t a = distribution(generator);
       size_t b = distribution(generator);
       m_hasher[i] = LinearCongruentialHash(n, a, b);
@@ -65,8 +66,8 @@ private:
  */
 class BloomFilter {
 public:
-  BloomFilter(const size_t k, const size_t n, std::mt19937_64& generator)
-    : m_hasher(k, n, generator), m_table(n, false)
+  BloomFilter(const size_t n, const size_t k, std::mt19937_64& generator)
+    : m_hasher(n, k, generator), m_table(n, false)
   { }
 
   /**
@@ -91,7 +92,7 @@ public:
    * @return  true if the element exists in the Bloom filter, else returns false.
    */
   bool
-  check(const size_t x) const
+  find(const size_t x) const
   {
     std::vector<size_t> positions(m_hasher(x));
     for (std::vector<size_t>::const_iterator pos = positions.begin(); pos != positions.end(); ++pos) {
@@ -114,11 +115,54 @@ void
 printUsage(
 )
 {
-  std::cerr << "usage: bloom_filters n m seed" << std::endl;
+  std::cerr << "usage: bloom_filters n m seed t" << std::endl;
   std::cerr << "Options and arguments:" << std::endl;
   std::cerr << "n    : table size of Bloom filter" << std::endl;
   std::cerr << "m    : maximum number of items inserted into Bloom filter" << std::endl;
+  std::cerr << "t    : number of tests to be run for determining the false positive rate" << std::endl;
   std::cerr << "seed : seed for the random number generator" << std::endl;
+}
+
+/**
+ * @brief  Calculates false positive rate for the given instance of Bloom filter.
+ *
+ * @param bf         Instance of the Bloom filter.
+ * @param generator  Generator for generating random elements for the Bloom filter.
+ * @param m          Maximum number of elements that can be inserted in the filter.
+ * @param numTests   Number of tests to be run for determining the false positive rate.
+ *
+ * @return  Calculated false positive rate of the Bloom filter.
+ */
+double
+calculateFalsePositiveRate(
+  BloomFilter& bf,
+  std::mt19937_64& generator,
+  const size_t m,
+  const size_t numTests
+)
+{
+  double fpr = 0.0;
+  std::set<size_t> added;
+
+  std::uniform_int_distribution<size_t> distribution_add;
+  for (size_t i = 0; i < m; ++i) {
+    size_t element = distribution_add(generator);
+    bf.add(element);
+    added.insert(element);
+  }
+
+  size_t falsePositives = 0;
+  std::uniform_int_distribution<size_t> distribution_find;
+  for (size_t i = 0; i < numTests; ++i) {
+    size_t element = distribution_find(generator);
+    if (bf.find(element) && (added.find(element) == added.end())) {
+      ++falsePositives;
+    }
+  }
+
+  fpr = static_cast<double>(falsePositives) / numTests;
+
+  return fpr;
 }
 
 /**
@@ -139,14 +183,17 @@ main(
   size_t n = 0;
   // capacity of the Bloom filter
   size_t m = 0;
+  // number of tests to run for false +ve
+  size_t numTests = 0;
   // seed for the random number generator
   size_t seed = 0;
-  if (argc == 4) {
+  if (argc == 5) {
     // first and second argument must be n and c, respectively
     try {
       n = std::stoul(argv[1]);
       m = std::stoul(argv[2]);
-      seed = std::stoul(argv[3]);
+      numTests = std::stoul(argv[3]);
+      seed = std::stoul(argv[4]);
     }
     catch (std::exception& e) {
       std::cerr << "Invalid argument(s)" << std::endl;
@@ -159,15 +206,18 @@ main(
       printUsage();
       return 1;
   }
-  for (int i = 0; i < argc; ++i) {
-    std::cout << argv[i] << std::endl;
-  }
+  //for (int i = 0; i < argc; ++i) {
+    //std::cout << argv[i] << std::endl;
+  //}
   double c = static_cast<double>(n) / m;
   // number of hash functions in the Bloom filter
   size_t k = static_cast<size_t>(std::ceil(c * std::log(2)));
-  std::cout << c << " " << k << std::endl;
+  std::cout << "c = " << c << ", k = " << k << std::endl;
 
   std::mt19937_64 generator(seed);
   BloomFilter bf(n, k, generator);
+  double fpr = calculateFalsePositiveRate(bf, generator, m, numTests);
+  std::cout << "Calculated false positive rate is: " << fpr << std::endl;
+
   return 0;
 }
