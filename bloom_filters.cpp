@@ -40,7 +40,7 @@ public:
     : m_hasher(k)
   {
     for (size_t i = 0; i < k; ++i) {
-      std::uniform_int_distribution<size_t> distribution(0, n-1);
+      std::uniform_int_distribution<size_t> distribution(1, n-1);
       size_t a = distribution(generator);
       size_t b = distribution(generator);
       m_hasher[i] = LinearCongruentialHash(n, a, b);
