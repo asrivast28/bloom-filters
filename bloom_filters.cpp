@@ -1,4 +1,5 @@
 #include <cmath>
+#include <ctime>
 #include <iostream>
 #include <string>
 #include <random>
@@ -115,12 +116,10 @@ void
 printUsage(
 )
 {
-  std::cerr << "usage: bloom_filters n m seed t" << std::endl;
+  std::cerr << "usage: bloom_filters n m" << std::endl;
   std::cerr << "Options and arguments:" << std::endl;
   std::cerr << "n    : table size of Bloom filter" << std::endl;
   std::cerr << "m    : maximum number of items inserted into Bloom filter" << std::endl;
-  std::cerr << "t    : number of tests to be run for determining the false positive rate" << std::endl;
-  std::cerr << "seed : seed for the random number generator" << std::endl;
 }
 
 /**
@@ -187,13 +186,13 @@ main(
   size_t numTests = 0;
   // seed for the random number generator
   size_t seed = 0;
-  if (argc == 5) {
-    // first and second argument must be n and c, respectively
+  if (argc == 3) {
+    // first and second argument must be n and m, respectively
     try {
       n = std::stoul(argv[1]);
       m = std::stoul(argv[2]);
-      numTests = std::stoul(argv[3]);
-      seed = std::stoul(argv[4]);
+      numTests = n;
+      seed = static_cast<size_t>(time(NULL));
     }
     catch (std::exception& e) {
       std::cerr << "Invalid argument(s)" << std::endl;
@@ -206,13 +205,9 @@ main(
       printUsage();
       return 1;
   }
-  //for (int i = 0; i < argc; ++i) {
-    //std::cout << argv[i] << std::endl;
-  //}
   double c = static_cast<double>(n) / m;
   // number of hash functions in the Bloom filter
   size_t k = static_cast<size_t>(std::ceil(c * std::log(2)));
-  std::cout << "c = " << c << ", k = " << k << std::endl;
 
   std::mt19937_64 generator(seed);
   BloomFilter bf(n, k, generator);
