@@ -1,4 +1,7 @@
 # Bloom Filters Simulator
+
+This simulator was developed as part of CS 6505 - Computability & Algorithms. The analysis performed using the simulator can be found [here](report.pdf).
+
 In this project, Bloom filter was implemented in C++11. Mersenne Twister pseudo-random number generator engine was used for generating random numbers. The generator is programmed to use current time as seed for getting different results every time it is used.
 
 Given *n* and *m*, the simulator works as follows. First, it instantiates the Bloom filter with *n* bits and *k* hash functions, where *k* is set to round(*n*/*m* ln 2). The hash functions are implemented as *h_i*(*x*) = (*a_i* * *x* + *b_i*) mod *n* for all *k*, where *a_i* and *b_i* are chosen from 1, ..., *n*-1 uniformly at random. Then, the simulator generates *m* random numbers and adds them to the Bloom filter.
